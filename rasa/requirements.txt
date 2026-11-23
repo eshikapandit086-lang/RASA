@@ -1,0 +1,14 @@
+# Rasa Cultural Intelligence Agent Dependencies
+
+# Google ADK: Multi-agent builder framework
+google-adk==0.1.0
+
+# LLM Framework SDK
+# Google GenAI ecosystem tools
+google-generativeai==0.8.3
+
+# Web Application User Interface
+gradio==4.44.1
+
+# Environment Variable Loader
+python-dotenv==1.0.1

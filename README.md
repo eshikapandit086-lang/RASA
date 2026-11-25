@@ -1,30 +1,59 @@
-RASA — Global Marketing Intelligence
+# RASA: Cultural Intelligence for Global Marketing Copy
 
-RASA is a multi-agent system designed to analyse marketing copy across global markets.
+RASA is a three-agent pipeline that checks marketing copy against the cultural context of different markets. It was built as my capstone for Kaggle's AI Agents Intensive.
 
-Built as my capstone project for Kaggle's AI Agents Intensive, it explores how agent-based AI systems can help examine marketing communication across different markets.
+Kaggle notebook: https://www.kaggle.com/code/eshikapandit/rasa-culural-intelligence-agent
 
-The Idea
+## What it does
 
-Marketing messages do not always communicate the same way across cultures and audiences. RASA explores how an AI-powered multi-agent approach can support the analysis of marketing copy in a global context.
+You give it a caption, tagline or campaign idea and a list of target markets (default: India, Japan, South Korea, USA). For each market it returns:
 
-Project Highlights
+- a resonance score from 0 to 100
+- a risk level (Low, Medium or High)
+- key findings and a regional warning
+- a localised alternative version of the copy
+- a recommendation (Safe, Caution or Avoid)
 
-- Multi-agent system for marketing copy analysis
-- Designed around global market analysis
-- Built using Google Agent Development Kit (ADK) 2.0
-- Uses the Gemini API
+It then compiles everything into a Markdown advisory report.
 
-Technology
+## How it works
 
-- Google ADK 2.0
-- Gemini API
-- TypeScript (repository language indicator)
+Three stages, one specialised agent each:
 
-Project Context
+1. **Research agent:** uses Gemini with Google Search grounding to gather idioms, double meanings, taboos and current trends for the market.
+2. **Analyzer agent:** reads the research and scores resonance and risk, returning structured JSON (a Pydantic schema in Python, a response schema in TypeScript).
+3. **Reporter agent:** turns the market scorecards into the final report.
 
-This project was developed as part of the Kaggle AI Agents Intensive capstone.
+## What is in this repo
 
-Status
+| Path | What it is |
+|---|---|
+| `rasa/` | Python implementation: three agent classes, prompts, config and a command-line entry point (`main.py`), using the `google-genai` SDK |
+| `server.ts`, `src/` | Web app: an Express server exposing `POST /api/pipeline` (the same three stages using `@google/genai`) and a React + Vite front end |
 
-Project repository and implementation are available for exploration. More detailed setup and usage instructions will be added as the implementation is documented.
+## Run the web app
+
+```bash
+npm install
+cp .env.example .env      # then set GEMINI_API_KEY
+npm run dev               # http://localhost:3000
+```
+
+## Run the Python pipeline
+
+```bash
+cd rasa
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env      # then set GEMINI_API_KEY
+python main.py "Your marketing copy here"
+```
+
+## Status and known limitations
+
+- The hosted demo is paused. Run it locally with your own Gemini API key.
+- When the Gemini call fails or no key is set, the web server currently returns simulated results (hard-coded for a few sample phrases, otherwise scores derived from the text), and the Python reporter falls back to fixed placeholder text. The Python analyzer now reports the failure instead of inventing a score. Replacing the remaining fallbacks with explicit errors is the next change.
+- Google ADK is listed in `rasa/requirements.txt`, but the code calls the `google-genai` SDK directly.
+- `rasa/tools/search_tool.py` is a stub. Live search comes from Gemini's built-in Google Search grounding.
+- Scores are model judgements. They have not been validated against real audience data.
